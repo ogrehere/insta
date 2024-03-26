@@ -23,6 +23,7 @@ This is a Telegram bot that allows users to download Instagram videos by sending
 ## Deploying the Bot
 
 ### Heroku
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/VOIDEX-TG/Instagram-Video-Downloader)
 
 1. Fork or clone this repository.
 2. Create a new Heroku app.
@@ -31,6 +32,7 @@ This is a Telegram bot that allows users to download Instagram videos by sending
 5. Deploy your Heroku app.
 
 ### Railway.app
+[![Deploy to Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/VOIDEX-TG/Instagram-Video-Downloader)
 
 1. Fork or clone this repository.
 2. Create a new Railway project.

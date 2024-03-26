@@ -42,4 +42,4 @@ This is a Telegram bot that allows users to download Instagram videos by sending
 
 ## Credits
 
-This bot was created by [HexorXd].
+This bot was created by [Voidex Tg](https://t.me/VoidexTg)

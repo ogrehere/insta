@@ -5,7 +5,7 @@ import instaloader
 # Telegram bot credentials
 api_id = "5994204"
 api_hash = "1c40c54693e2cdbe51f90a152ed1bd5f"
-bot_token = "6707583022:AAHk4Z_bdd22vAuyOe7CVoGiSPVQy-y1vSU"
+bot_token = "6707583022:AAEahTtTAlqL0ujzwbkNNSLGorFlBs63CRQ"
 
 # Initialize Telegram client
 client = TelegramClient('bot_session', api_id, api_hash).start(bot_token=bot_token)

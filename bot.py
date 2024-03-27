@@ -1,62 +1,51 @@
+from telethon.sync import TelegramClient, events
+import requests
 import os
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
-import instaloader
-from config import TELEGRAM_BOT_TOKEN, CHANNEL_ID
 
-# Function to handle the /start command
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Welcome to Instagram Video Downloader Bot! Send me the Instagram post URL and I will download the video for you.')
+# Telegram bot credentials
+api_id = 'YOUR_API_ID'
+api_hash = 'YOUR_API_HASH'
+bot_token = 'YOUR_BOT_TOKEN'
 
-# Function to handle the message containing Instagram URL
-def download_instagram_video(update: Update, context: CallbackContext) -> None:
-    # Extract the Instagram URL from the message
-    url = update.message.text
-    
-    # Check if the user is a member of the channel
-    if not context.bot.get_chat_member(CHANNEL_ID, update.message.from_user.id).status == 'member':
-        update.message.reply_text("Please join the channel to use this bot.")
-        return
+# Initialize Telegram client
+client = TelegramClient('bot_session', api_id, api_hash).start(bot_token=bot_token)
 
-    # Create an instance of Instaloader
-    loader = instaloader.Instaloader()
-
+# Define a function to download Instagram videos
+def download_instagram_video(url):
     try:
-        # Download the video
-        post = instaloader.Post.from_shortcode(loader.context, url.split('/')[-2])
-        loader.download_post(post, target='.')
-        
-        # Get the downloaded video file
-        video_filename = f"{post.owner_username}_{post.date_utc.strftime('%Y%m%d')}.mp4"
-        
-        # Send the video file to the user
-        update.message.reply_video(video=open(video_filename, 'rb'))
-        
-        # Delete the downloaded video file
-        os.remove(video_filename)
-    
+        response = requests.get(url)
+        if response.status_code == 200:
+            content_type = response.headers.get('content-type')
+            if 'video' in content_type:
+                file_name = 'instagram_video.mp4'
+                with open(file_name, 'wb') as f:
+                    f.write(response.content)
+                return file_name
+            else:
+                return "Provided URL is not for a video."
+        else:
+            return "Failed to download the video."
     except Exception as e:
-        update.message.reply_text(f"Error: {str(e)}")
+        return str(e)
 
-def main() -> None:
-    # Create the Updater and pass it your bot's token
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+# Define a handler for incoming messages
+@client.on(events.NewMessage(pattern='/start'))
+async def start(event):
+    await event.respond('Welcome! Please send me the URL of the Instagram video you want to download.')
 
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
+# Define a handler for incoming messages containing Instagram video URLs
+@client.on(events.NewMessage)
+async def handle_message(event):
+    if event.message.text.startswith('https://www.instagram.com/p/'):
+        video_url = event.message.text
+        file_path = download_instagram_video(video_url)
+        if file_path:
+            await event.respond('Here is your Instagram video:', file=open(file_path, 'rb'))
+            os.remove(file_path)
+        else:
+            await event.respond('Failed to download the Instagram video.')
+    else:
+        await event.respond('Please provide a valid Instagram video URL.')
 
-    # Register command handlers
-    dispatcher.add_handler(CommandHandler("start", start))
-    
-    # Register message handler for Instagram URLs
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, download_instagram_video))
-
-    # Start the Bot
-    updater.start_polling()
-
-    # Run the bot until you press Ctrl-C
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
-
+# Start the bot
+client.run_until_disconnected()

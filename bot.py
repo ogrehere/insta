@@ -36,7 +36,7 @@ async def start(event):
 # Define a handler for incoming messages containing Instagram video URLs
 @client.on(events.NewMessage)
 async def handle_message(event):
-    if event.message.text.startswith('https://www.instagram.com/p/'):
+    if event.message.text.startswith('https://www.instagram.com/reel/'):
         video_url = event.message.text
         file_path = download_instagram_video(video_url)
         if file_path:

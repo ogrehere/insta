@@ -40,7 +40,7 @@ def download_instagram_video(update: Update, context: CallbackContext) -> None:
 
 def main() -> None:
     # Create the Updater and pass it your bot's token
-    updater = Updater(TELEGRAM_BOT_TOKEN)
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
@@ -59,3 +59,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+

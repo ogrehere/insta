@@ -1,6 +1,6 @@
 from telethon.sync import TelegramClient, events
-import requests
 import os
+import instaloader
 
 # Telegram bot credentials
 api_id = "5994204"
@@ -13,18 +13,21 @@ client = TelegramClient('bot_session', api_id, api_hash).start(bot_token=bot_tok
 # Define a function to download Instagram videos
 def download_instagram_video(url):
     try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            content_type = response.headers.get('content-type')
-            if 'video' in content_type:
-                file_name = 'instagram_video.mp4'
-                with open(file_name, 'wb') as f:
-                    f.write(response.content)
-                return file_name
-            else:
-                return "Provided URL is not for a video."
-        else:
-            return "Failed to download the video."
+        # Create an instaloader instance
+        loader = instaloader.Instaloader()
+
+        # Get post information
+        post = instaloader.Post.from_shortcode(loader.context, url.split('/')[-2])
+
+        # Get video URL
+        video_url = post.video_url
+
+        # Download the video
+        file_name = 'instagram_video.mp4'
+        loader.download_post(post, target=file_name)
+        
+        return file_name
+
     except Exception as e:
         return str(e)
 

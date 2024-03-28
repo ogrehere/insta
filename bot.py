@@ -50,18 +50,6 @@ async def get_video_command(event):
 
 # ... (get_channel_videos function)
 
-@client.on(events.NewMessage(pattern='/get_video'))
-@client.on(events.CallbackQuery)  # Handle both command and button click
-async def get_video_handler(event):  # Use a common function
-    global current_video_index
-    videos = get_channel_videos()
-    if current_video_index < len(videos):
-        video = videos[current_video_index]
-        await event.respond(file=video)
-        current_video_index += 1
-        if current_video_index >= len(videos):  # Check if we've reached the end
-            current_video_index = 0  # Reset the index
-
 # ... (rest of your code)
 
 

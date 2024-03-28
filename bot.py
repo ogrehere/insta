@@ -3,7 +3,7 @@ from telethon import TelegramClient, events
 # Configure the Telegram client
 api_id = "5994204"
 api_hash = "1c40c54693e2cdbe51f90a152ed1bd5f"
-bot_token = "6707583022:AAF6EyMsuhRODoZguT9XwGcPkOAXwteeijQ"
+bot_token = "6707583022:AAHk4Z_bdd22vAuyOe7CVoGiSPVQy-y1vSU"
 
 # Initialize the Telegram client
 client = TelegramClient("my_bot", api_id, api_hash).start(bot_token=bot_token)
@@ -15,11 +15,16 @@ channel_link = "https://t.me/wifisjcj227"
 current_video_index = 0
 
 # Function to get videos from channel
+# Function to get videos from channel
 def get_channel_videos():
-    # Code to scrape videos from the channel
-    # Replace this with your own scraping logic
-    videos = ["video1.mp4", "video2.mp4", "video3.mp4"]
-    return videos
+    # List of video URLs
+    video_urls = [
+        "https://t.me/wifisjcj227/3",
+        "https://t.me/wifisjcj227/8",
+        "https://t.me/wifisjcj227/10"
+    ]
+    return video_urls
+
 
 # Event handler for the "/start" command
 @client.on(events.NewMessage(pattern='/start'))
@@ -32,11 +37,12 @@ async def get_video_command(event):
     global current_video_index
     videos = get_channel_videos()
     if current_video_index < len(videos):
-        video = videos[current_video_index]
-        await event.respond(file=video)
+        video_url = videos[current_video_index]
+        await event.respond(file=video_url)
         current_video_index += 1
     else:
         await event.respond("No more videos available.")
+
 
 # Event handler for button clicks
 @client.on(events.CallbackQuery)

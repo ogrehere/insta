@@ -1,42 +1,46 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler
-import requests
-from bs4 import BeautifulSoup
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-# Function to scrape video links from the channel
-def scrape_videos(channel_url):
-    response = requests.get(channel_url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    video_tags = soup.find_all('a', class_='video-link')  # Adjust class name as per your channel's HTML structure
-    video_urls = [tag['href'] for tag in video_tags]
-    return video_urls
+# Create a Pyrogram Client
+api_id = "5994204"
+api_hash = "1c40c54693e2cdbe51f90a152ed1bd5f"
+bot_token = "6707583022:AAHk4Z_bdd22vAuyOe7CVoGiSPVQy-y1vSU"
 
-# Function to handle the /start command
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text("Welcome to the Hexor bot! Click the Hexor button to get a video from the channel.")
+app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
-# Function to handle button clicks
-def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    if query.data == 'hexor':
-        channel_url = 'https://t.me/+YokGKELJu9YwZDk1'  # Replace with your channel URL
-        video_urls = scrape_videos(channel_url)
-        
-        click_count = context.user_data.get('click_count', 0)
-        if click_count < len(video_urls):
-            query.message.reply_video(video_urls[click_count])
-            context.user_data['click_count'] = click_count + 1
+# Define the channel link
+channel_link = "https://t.me/wifisjcj227"
+
+# Global variable to keep track of the current video index
+current_video_index = 0
+
+# Function to get videos from channel
+def get_channel_videos():
+    # Code to scrape videos from the channel
+    # Replace this with your own scraping logic
+    videos = ["video1.mp4", "video2.mp4", "video3.mp4"]
+    return videos
+
+# Command handler
+@app.on_message(filters.command(["start"]))
+def start_command(client, message):
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Get Video", callback_data="get_video")]
+    ])
+    message.reply_text("Press the button to get a video from the channel.", reply_markup=reply_markup)
+
+# Callback query handler
+@app.on_callback_query()
+def callback_query(client, callback_query):
+    global current_video_index
+    if callback_query.data == "get_video":
+        videos = get_channel_videos()
+        if current_video_index < len(videos):
+            video = videos[current_video_index]
+            client.send_video(callback_query.message.chat.id, video)
+            current_video_index += 1
         else:
-            query.message.reply_text("No more videos available.")
+            client.send_message(callback_query.message.chat.id, "No more videos available.")
 
-# Main function to start the bot
-def main() -> None:
-    updater = Updater("6707583022:AAEahTtTAlqL0ujzwbkNNSLGorFlBs63CRQ")
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CallbackQueryHandler(button_click))
-    updater.start_polling()
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+# Start the bot
+app.run()

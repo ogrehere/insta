@@ -19,7 +19,7 @@ current_video_index = 0
 def get_channel_videos():
     # List of video URLs
     video_urls = [
-                  "https://t.me/wifisjcj227/*"
+                  "https://t.me/wifisjcj227/3"
                  ]
     return video_urls
 

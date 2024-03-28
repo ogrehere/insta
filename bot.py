@@ -30,6 +30,9 @@ async def start_command(event):
     await event.respond("Press the button to get a video from the channel.")
 
 # Event handler for "/get_video" command
+
+# ... (get_channel_videos function)
+
 @client.on(events.NewMessage(pattern='/get_video'))
 async def get_video_command(event):
     global current_video_index
@@ -38,22 +41,29 @@ async def get_video_command(event):
         video_url = videos[current_video_index]
         await event.respond(file=video_url)
         current_video_index += 1
-    else:
-        await event.respond("No more videos available.")
+        if current_video_index >= len(videos):  # Check if we've reached the end
+            current_video_index = 0  # Reset the index
 
+# ... (rest of your code)
 
-# Event handler for button clicks
-@client.on(events.CallbackQuery)
-async def callback_query(event):
+# ... (rest of your imports and setup)
+
+# ... (get_channel_videos function)
+
+@client.on(events.NewMessage(pattern='/get_video'))
+@client.on(events.CallbackQuery)  # Handle both command and button click
+async def get_video_handler(event):  # Use a common function
     global current_video_index
-    if event.data.decode() == "get_video":
-        videos = get_channel_videos()
-        if current_video_index < len(videos):
-            video = videos[current_video_index]
-            await event.respond(file=video)
-            current_video_index += 1
-        else:
-            await event.respond("No more videos available.")
+    videos = get_channel_videos()
+    if current_video_index < len(videos):
+        video = videos[current_video_index]
+        await event.respond(file=video)
+        current_video_index += 1
+        if current_video_index >= len(videos):  # Check if we've reached the end
+            current_video_index = 0  # Reset the index
+
+# ... (rest of your code)
+
 
 # Start the client
 client.run_until_disconnected()

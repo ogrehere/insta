@@ -1,12 +1,12 @@
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telethon import TelegramClient, events
 
-# Create a Pyrogram Client
+# Configure the Telegram client
 api_id = "5994204"
 api_hash = "1c40c54693e2cdbe51f90a152ed1bd5f"
 bot_token = "6707583022:AAHk4Z_bdd22vAuyOe7CVoGiSPVQy-y1vSU"
 
-app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
+# Initialize the Telegram client
+client = TelegramClient("my_bot", api_id, api_hash).start(bot_token=bot_token)
 
 # Define the channel link
 channel_link = "https://t.me/wifisjcj227"
@@ -21,26 +21,35 @@ def get_channel_videos():
     videos = ["video1.mp4", "video2.mp4", "video3.mp4"]
     return videos
 
-# Command handler
-@app.on_message(filters.command(["start"]))
-def start_command(client, message):
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Get Video", callback_data="get_video")]
-    ])
-    message.reply_text("Press the button to get a video from the channel.", reply_markup=reply_markup)
+# Event handler for the "/start" command
+@client.on(events.NewMessage(pattern='/start'))
+async def start_command(event):
+    await event.respond("Press the button to get a video from the channel.")
 
-# Callback query handler
-@app.on_callback_query()
-def callback_query(client, callback_query):
+# Event handler for "/get_video" command
+@client.on(events.NewMessage(pattern='/get_video'))
+async def get_video_command(event):
     global current_video_index
-    if callback_query.data == "get_video":
+    videos = get_channel_videos()
+    if current_video_index < len(videos):
+        video = videos[current_video_index]
+        await event.respond(file=video)
+        current_video_index += 1
+    else:
+        await event.respond("No more videos available.")
+
+# Event handler for button clicks
+@client.on(events.CallbackQuery)
+async def callback_query(event):
+    global current_video_index
+    if event.data.decode() == "get_video":
         videos = get_channel_videos()
         if current_video_index < len(videos):
             video = videos[current_video_index]
-            client.send_video(callback_query.message.chat.id, video)
+            await event.respond(file=video)
             current_video_index += 1
         else:
-            client.send_message(callback_query.message.chat.id, "No more videos available.")
+            await event.respond("No more videos available.")
 
-# Start the bot
-app.run()
+# Start the client
+client.run_until_disconnected()

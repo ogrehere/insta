@@ -18,7 +18,7 @@ current_video_index = 0
 # Function to get videos from channel
 def get_channel_videos():
     # List of video URLs
-    video_urls = ["https://t.me/wifisjcj227/{}".format(i) for i in range(1, 51)]
+    video_urls = ["https://t.me/wifisjcj227/{}".format(i) for i in range(1, 9)]
     return video_urls
 
 

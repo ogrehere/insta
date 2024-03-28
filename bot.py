@@ -3,59 +3,42 @@ from telethon import TelegramClient, events
 # Configure the Telegram client
 api_id = "5994204"
 api_hash = "1c40c54693e2cdbe51f90a152ed1bd5f"
-bot_token = "6707583022:AAF6EyMsuhRODoZguT9XwGcPkOAXwteeijQ"
+bot_token = "6707583022:AAHk4Z_bdd22vAuyOe7CVoGiSPVQy-y1vSU"
 
 # Initialize the Telegram client
 client = TelegramClient("my_bot", api_id, api_hash).start(bot_token=bot_token)
-
-# Define the channel link
-channel_link = "https://t.me/wifisjcj227"
 
 # Global variable to keep track of the current video index
 current_video_index = 0
 
 # Function to get videos from channel
-# Function to get videos from channel
-def get_channel_videos():
-    # List of video URLs
-    video_urls = [
-        "https://t.me/wifisjcj227/3",
-        "https://t.me/wifisjcj227/8",
-        "https://t.me/wifisjcj227/10"
-    ]
+async def get_channel_videos():
+    # Define the channel link
+    channel_link = "https://t.me/wifisjcj227"
+    # Initialize an empty list to store video URLs
+    video_urls = []
+    # Get the channel entity
+    entity = await client.get_entity(channel_link)
+    # Iterate over messages in the channel and extract video URLs
+    async for message in client.iter_messages(entity):
+        if message.media and hasattr(message.media, 'document') and message.media.document.mime_type == 'video/mp4':
+            # Get the download URL for the video
+            download_url = await client.download_media(message.media)
+            video_urls.append(download_url)
     return video_urls
 
-
-# Event handler for the "/start" command
-@client.on(events.NewMessage(pattern='/start'))
-async def start_command(event):
-    await event.respond("Press the button to get a video from the channel.")
 
 # Event handler for "/get_video" command
 @client.on(events.NewMessage(pattern='/get_video'))
 async def get_video_command(event):
     global current_video_index
-    videos = get_channel_videos()
+    videos = await get_channel_videos()
     if current_video_index < len(videos):
         video_url = videos[current_video_index]
         await event.respond(file=video_url)
         current_video_index += 1
     else:
         await event.respond("No more videos available.")
-
-
-# Event handler for button clicks
-@client.on(events.CallbackQuery)
-async def callback_query(event):
-    global current_video_index
-    if event.data.decode() == "get_video":
-        videos = get_channel_videos()
-        if current_video_index < len(videos):
-            video = videos[current_video_index]
-            await event.respond(file=video)
-            current_video_index += 1
-        else:
-            await event.respond("No more videos available.")
 
 # Start the client
 client.run_until_disconnected()

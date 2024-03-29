@@ -1,57 +1,46 @@
 from telethon import TelegramClient, events
+import os
 
-# Configure the Telegram client
-api_id = "5994204"
-api_hash = "1c40c54693e2cdbe51f90a152ed1bd5f"
-bot_token = "7044443623:AAGSsD9LOw3_u1BGqbgjy2Tuvoiy2mTOsCo"
+# ... (your API credentials and client setup) ...
+api_id = 5994204  
+api_hash = '1c40c54693e2cdbe51f90a152ed1bd5f'
+bot_token = '7044443623:AAGSsD9LOw3_u1BGqbgjy2Tuvoiy2mTOsCo'
 
-# Initialize the Telegram client
-client = TelegramClient("my_bot", api_id, api_hash).start(bot_token=bot_token)
+client = TelegramClient('video_scraper_bot', api_id, api_hash)
+client.start(bot_token=bot_token)
 
-# Define the channel link
-channel_link = "https://t.me/wifisjcj227"
+latest_video_index = {}  # A dictionary to store index per chat
 
-# Global variable to keep track of the current video index
-current_video_index = 0
+@client.on(events.NewMessage(pattern='/start')) 
+async def handler(event):
+    await client.send_message(event.chat_id, "Hi there! I'm a bot that can send videos from a specific channel. Use the /getvideo command to get the next video.")
 
-# Function to get videos from channel
-# Function to get videos from channel
-def get_channel_videos():
-    # List of video URLs
-    video_urls = [
-                  "https://t.me/wifisjcj227/3"
-                 ]
-    return video_urls
+@client.on(events.NewMessage(pattern='/getvideo'))
+async def handler(event):
+    chat_id = event.chat_id
+    target_channel_url = "https://t.me/wifisjcj227"
 
+    await send_next_video(chat_id, target_channel)
 
-# Event handler for the "/start" command
-@client.on(events.NewMessage(pattern='/start'))
-async def start_command(event):
-    await event.respond("Press the button to get a video from the channel.")
+async def send_next_video(chat_id, target_channel):
+    if chat_id not in latest_video_index:
+        latest_video_index[chat_id] = 0  # Initialize index
 
-# Event handler for "/get_video" command
+  async for message in client.iter_messages(target_channel, reverse=True):   # Iterate in reverse
+        if message.media and message.media.document:
+            if latest_video_index[chat_id] == 0:  # Skip videos already sent
+                latest_video_index[chat_id] += 1 
+                continue
 
-# ... (get_channel_videos function)
+            try:
+                await client.forward_messages(chat_id, message)
+                latest_video_index[chat_id] += 1  # Increment for the next video
+                return  # Stop iteration once a video is sent
+            except Exception as e:
+                await client.send_message(chat_id, f"Error forwarding video: {e}")
+                return
 
-@client.on(events.NewMessage(pattern='/get_video'))
-async def get_video_command(event):
-    global current_video_index
-    videos = get_channel_videos()
-    if current_video_index < len(videos):
-        video_url = videos[current_video_index]
-        await event.respond(file=video_url)
-        current_video_index += 1
-        if current_video_index >= len(videos):  # Check if we've reached the end
-            current_video_index = 0  # Reset the index
+    # If we reach here, no more videos were found
+    await client.send_message(chat_id, "No more videos found in this channel.") 
 
-# ... (rest of your code)
-
-# ... (rest of your imports and setup)
-
-# ... (get_channel_videos function)
-
-# ... (rest of your code)
-
-
-# Start the client
 client.run_until_disconnected()

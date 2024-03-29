@@ -1,21 +1,10 @@
-# Use the official Python image as a parent image
-FROM python:3.9-slim
+FROM python:3.9-slim # Or a suitable Python version of your choice
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+WORKDIR /code 
 
-# Set the working directory in the container
-WORKDIR /app
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt 
 
-# Copy the dependencies file to the working directory
-COPY requirements.txt .
+COPY . .  # Copy your code files (bot.py, config.py)
 
-# Install any dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the content of the local src directory to the working directory
-COPY . .
-
-# Command to run the application
-CMD ["python", "bot.py"]
+CMD ["python", "bot.py"] 

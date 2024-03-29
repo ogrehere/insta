@@ -1,6 +1,6 @@
 FROM python:3.9-slim # Or a suitable Python version of your choice
 
-WORKDIR /app
+WORKDIR /code
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt 

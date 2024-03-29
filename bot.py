@@ -26,21 +26,22 @@ async def send_next_video(chat_id, target_channel):
     if chat_id not in latest_video_index:
         latest_video_index[chat_id] = 0  # Initialize index
 
-  async for message in client.iter_messages(target_channel, reverse=True):   # Iterate in reverse
-        if message.media and message.media.document:
-            if latest_video_index[chat_id] == 0:  # Skip videos already sent
-                latest_video_index[chat_id] += 1 
-                continue
+  async for message in client.iter_messages(target_channel, reverse=True):  # Iterate in reverse
+    if message.media and message.media.document:
+      if latest_video_index[chat_id] == 0: # Skip videos already sent
+        latest_video_index[chat_id] += 1 
+        continue
 
-            try:
-                await client.forward_messages(chat_id, message)
-                latest_video_index[chat_id] += 1  # Increment for the next video
-                return  # Stop iteration once a video is sent
-            except Exception as e:
-                await client.send_message(chat_id, f"Error forwarding video: {e}")
-                return
+      try:
+        await client.forward_messages(chat_id, message)
+        latest_video_index[chat_id] += 1 # Increment for the next video
+        return # Stop iteration once a video is sent
+      except Exception as e:
+        await client.send_message(chat_id, f"Error forwarding video: {e}")
+        return
 
-    # If we reach here, no more videos were found
-    await client.send_message(chat_id, "No more videos found in this channel.") 
+  # If we reach here, no more videos were found
+  await client.send_message(chat_id, "No more videos found in this channel.") 
+
 
 client.run_until_disconnected()

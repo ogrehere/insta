@@ -1,3 +1,5 @@
 pyrogram[fast]
 phonenumbers
 geocoder
+timezonefinder
+geopy

@@ -1,47 +1,77 @@
-from telethon import TelegramClient, events
-import os
+import pyrogram
+from pyrogram import filters, InlineKeyboardButton, InlineKeyboardMarkup
+import phonenumbers
+import geocoder
 
-# ... (your API credentials and client setup) ...
-api_id = 5994204  
-api_hash = '1c40c54693e2cdbe51f90a152ed1bd5f'
-bot_token = '7044443623:AAGSsD9LOw3_u1BGqbgjy2Tuvoiy2mTOsCo'
+# Replace with your actual credentials
+API_ID = 5994204  
+API_HASH = "1c40c54693e2cdbe51f90a152ed1bd5f" 
+BOT_TOKEN = "7044443623:AAGSsD9LOw3_u1BGqbgjy2Tuvoiy2mTOsCo"
 
-client = TelegramClient('video_scraper_bot', api_id, api_hash)
-client.start(bot_token=bot_token)
+app = pyrogram.Client("my_info_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-latest_video_index = {}  # A dictionary to store index per chat
+# Modify the start command to include buttons with images
+@app.on_message(filters.private & filters.command("start"))
+async def start(client, message):
+    joined = await check_required_channels(client, message.chat.id)
 
-@client.on(events.NewMessage(pattern='/start')) 
-async def handler(event):
-    await client.send_message(event.chat_id, "Hi there! I'm a bot that can send videos from a specific channel. Use the /getvideo command to get the next video.")
+    if not joined:
+        # Create InlineKeyboardMarkup with buttons and images
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="Channel 1",
+                        url="https://t.me/VoidexTg",
+                        callback_data="channel1"
+                    ),
+                    InlineKeyboardButton(
+                        text="Channel 2",
+                        url="https://t.me/EsportLeaker",
+                        callback_data="channel2"
+                    )
+                ]
+            ]
+        )
 
-@client.on(events.NewMessage(pattern='/getvideo'))
-async def handler(event):
-    chat_id = event.chat_id
-    target_channel_url = "https://t.me/wifisjcj227"
+        await message.reply_text(
+            "You Must Join All Our Channels to Access This Bot",
+            reply_markup=keyboard
+        )
+    else:
+        await message.reply_text(
+            "Welcome! Send a phone number to get information about it.\nExample: 919876543210"
+        )
 
-    await send_next_video(chat_id, target_channel)
+@app.on_message(filters.private & filters.text)
+async def process_number(client, message):
+    try:
+        phone_number = phonenumbers.parse(message.text)
 
-async def send_next_video(chat_id, target_channel):
-    if chat_id not in latest_video_index:
-        latest_video_index[chat_id] = 0  # Initialize index
+        info = phonenumbers.geocoder.description_for_number(phone_number, "en")
+        carrier = phonenumbers.carrier.name_for_number(phone_number, "en")
+        g = geocoder.timezone(info)
 
-  async for message in client.iter_messages(target_channel, reverse=True):  # Iterate in reverse
-    if message.media and message.media.document:
-      if latest_video_index[chat_id] == 0: # Skip videos already sent
-        latest_video_index[chat_id] += 1 
-        continue
+        await message.reply_photo(
+            photo="https://telegra.ph/file/f0b21cd8808d4fc97eb62.png",
+            caption=f"🔍 Number Information 🔍\n"
+                    f"📞 Number: {message.text}\n"
+                    f"👤 Name: (Not always available)\n"
+                    f"📡 Carrier: {carrier}\n"
+                    f"🌍 Country: {info}\n"
+                    f"⏰ TimeZone: {g.zone}"
+        )
 
-      try:
-        await client.forward_messages(chat_id, message)
-        latest_video_index[chat_id] += 1 # Increment for the next video
-        return # Stop iteration once a video is sent
-      except Exception as e:
-        await client.send_message(chat_id, f"Error forwarding video: {e}")
-        return
-
-  # If we reach here, no more videos were found
-  await client.send_message(chat_id, "No more videos found in this channel.") 
+    except phonenumbers.phonenumberutil.NumberParseException:
+        await message.reply_text("Invalid phone number format. Please provide a valid number.")
 
 
-client.run_until_disconnected()
+async def check_required_channels(client, user_id):
+    for channel in REQUIRED_CHANNELS:
+        chat_member = await client.get_chat_member(channel, user_id)
+        if chat_member.status != "member":
+            return False
+    return True
+
+
+app.run()

@@ -9,6 +9,9 @@ API_ID = 5994204
 API_HASH = "1c40c54693e2cdbe51f90a152ed1bd5f" 
 BOT_TOKEN = "7044443623:AAGSsD9LOw3_u1BGqbgjy2Tuvoiy2mTOsCo"
 
+# Define your list of required channels
+REQUIRED_CHANNELS = ["@VoidexTg", "@EsportLeaker"]
+
 app = pyrogram.Client("my_info_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Define the check_required_channels function

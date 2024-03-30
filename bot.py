@@ -11,6 +11,14 @@ BOT_TOKEN = "7044443623:AAGSsD9LOw3_u1BGqbgjy2Tuvoiy2mTOsCo"
 
 app = pyrogram.Client("my_info_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
+# Define the check_required_channels function
+async def check_required_channels(client, user_id):
+    for channel in REQUIRED_CHANNELS:
+        chat_member = await client.get_chat_member(channel, user_id)
+        if chat_member.status != "member":
+            return False
+    return True
+
 # Modify the start command to include buttons with images
 @app.on_message(filters.private & filters.command("start"))
 async def start(client, message):
@@ -65,5 +73,6 @@ async def process_number(client, message):
 
     except phonenumbers.phonenumberutil.NumberParseException:
         await message.reply_text("Invalid phone number format. Please provide a valid number.")
+
 
 app.run()

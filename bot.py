@@ -1,5 +1,5 @@
 import pyrogram
-from pyrogram import filters, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import phonenumbers
 import geocoder
 
